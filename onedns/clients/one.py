@@ -1,13 +1,7 @@
 import re
-import subprocess
-from collections import namedtuple
-
 import oca
 
 RE_VALIDNAME = re.compile('[^\w\d.-]')
-
-
-VM = namedtuple('VM', 'id, name, running, addr')
 
 
 class OneClient(object):
