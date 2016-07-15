@@ -9,9 +9,9 @@ class OneMonitor(object):
     Reads events from OpenNebula and activates/deactivates VM domain names
     '''
 
-    def __init__(self, one_kwargs={}, etcd_kwargs={}):
+    def __init__(self, domain, one_kwargs={}, etcd_kwargs={}):
         self._one = one.OneClient(**one_kwargs)
-        self._skydns = skydns.SkyDNSClient(etcd_kwargs=etcd_kwargs)
+        self._skydns = skydns.SkyDNSClient(domain, etcd_kwargs=etcd_kwargs)
 
     def update(self):
         for vm in self._one.vms():
