@@ -10,6 +10,5 @@ class OneClient(object):
         self._vm_pool = oca.VirtualMachinePool(self._oca)
 
     def vms(self):
-        #self._vm_pool.info(filter=-1)
-        self._vm_pool.info()
+        self._vm_pool.info(filter=-1)
         return self._vm_pool
