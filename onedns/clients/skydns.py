@@ -1,6 +1,9 @@
+import re
 import etcd
 
 from onedns.logger import log
+
+RE_VALIDNAME = re.compile('[^\w\d.-]')
 
 
 class SkyDNSClient(object):

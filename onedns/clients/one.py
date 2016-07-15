@@ -1,7 +1,4 @@
-import re
 import oca
-
-RE_VALIDNAME = re.compile('[^\w\d.-]')
 
 
 class OneClient(object):
