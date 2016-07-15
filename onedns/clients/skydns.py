@@ -16,7 +16,7 @@ class SkyDNSClient(object):
         self._etcd = etcd.Client(**etcd_kwargs)
 
     def _skydns_ns(self, parts):
-        return '/'.join(['skydns'] +  parts)
+        return '/'.join(['skydns'] + parts)
 
     def _get_forward_ns(self, hostname):
         return self._skydns_ns(self._reverse_domain_parts + [hostname])
@@ -46,5 +46,6 @@ class SkyDNSClient(object):
         primary_ip = vm.template.nics[0].ip
         self.add_host(hostname, primary_ip)
         for nic in vm.template.nics[1:]:
-            nicname = "{hostname}-{id}".format(hostname=hostname, id=nic.nic_id)
+            nicname = "{hostname}-{id}".format(hostname=hostname,
+                                               id=nic.nic_id)
             self.add_host(nicname, nic.ip)
