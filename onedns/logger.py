@@ -24,7 +24,8 @@ formatter = logging.Formatter(LOG_FORMAT)
 console.setFormatter(formatter)
 
 
-def configure_onedns_logging(use_syslog=False, syslog_device='/dev/log'):
+def configure_onedns_logging(use_syslog=False, syslog_device='/dev/log',
+                             debug=False):
     """
     Configure logging for onedns *application* code
 
@@ -38,7 +39,10 @@ def configure_onedns_logging(use_syslog=False, syslog_device='/dev/log'):
     /dev/log exists on the system (standard for most Linux distros)
     """
     log.setLevel(logging.DEBUG)
-    console.setLevel(logging.INFO)
+    if debug:
+        console.setLevel(logging.DEBUG)
+    else:
+        console.setLevel(logging.INFO)
     log.addHandler(console)
     if use_syslog and os.path.exists(syslog_device):
         log.debug("Logging to %s" % syslog_device)

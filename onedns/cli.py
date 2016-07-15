@@ -5,8 +5,11 @@ from onedns import logger
 
 
 def main():
-    logger.configure_onedns_logging()
-    parser = argparse.ArgumentParser(description='OneDNS - Dynamic DNS for OpenNebula')
+    parser = argparse.ArgumentParser(
+        description='OneDNS - Dynamic DNS for OpenNebula')
+    parser.add_argument('-d', '--debug', required=False,
+                        default=False, action='store_true',
+                        help='ONE controller host address')
     parser.add_argument('--one-address', required=False,
                         help='ONE controller host address')
     parser.add_argument('--one-secret', required=False,
@@ -20,6 +23,7 @@ def main():
     parser.add_argument('--etcd-cert', required=False, type=int,
                         help='path to etcd client ssl cert')
     args = parser.parse_args()
+    logger.configure_onedns_logging(debug=args.debug)
     args_dict = vars(args)
     one_args = dict((i.replace('one_', ''), args_dict[i]) for i in args_dict.keys() if
                     i.startswith('one_'))
