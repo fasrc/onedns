@@ -10,6 +10,9 @@ def main():
     parser.add_argument('-d', '--debug', required=False,
                         default=False, action='store_true',
                         help='ONE controller host address')
+    parser.add_argument('-i', '--interval', required=False,
+                        type=int, default=60,
+                        help="how often in seconds to poll ONE and update DNS")
     parser.add_argument('--one-address', required=False,
                         help='ONE controller host address')
     parser.add_argument('--one-secret', required=False,
@@ -32,4 +35,4 @@ def main():
                      for i in args_dict.keys() if i.startswith('etcd_'))
     mon = monitor.OneMonitor(args.domain, one_kwargs=one_args,
                              etcd_kwargs=etcd_args)
-    mon.run()
+    mon.run(args.interval)
