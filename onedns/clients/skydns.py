@@ -30,15 +30,29 @@ class SkyDNSClient(object):
         log.debug("forward path: {path}".format(path=forward))
         self._etcd.write(forward, json.dumps(dict(host=ip)))
 
+    def remove_forward(self, hostname, ip):
+        forward = self._get_forward_ns(hostname)
+        log.debug("removing forward: {path}".format(path=forward))
+        self._etcd.delete(forward)
+
     def add_reverse(self, ip, hostname):
         reverse = self._get_reverse_ns(ip)
         fqdn = '.'.join([hostname, self.domain])
         log.debug("reverse path: {path}".format(path=reverse))
         self._etcd.write(reverse, json.dumps(dict(host=fqdn)))
 
+    def remove_reverse(self, ip, hostname):
+        reverse = self._get_reverse_ns(ip)
+        log.debug("removing reverse: {path}".format(path=reverse))
+        self._etcd.delete(reverse)
+
     def add_host(self, hostname, ip):
         self.add_forward(hostname, ip)
         self.add_reverse(ip, hostname)
+
+    def remove_host(self, hostname, ip):
+        self.remove_forward(hostname, ip)
+        self.remove_reverse(ip, hostname)
 
     def register(self, vm):
         log.info("Registering VM: {vm}".format(vm=vm.name))

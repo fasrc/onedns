@@ -2,6 +2,7 @@ import argparse
 
 from onedns import monitor
 from onedns import logger
+from onedns.clients import skydns
 
 
 def get_kwargs(args, prefix):
@@ -15,6 +16,16 @@ def daemon(args, one_args, etcd_args):
     mon = monitor.OneMonitor(args.domain, one_kwargs=one_args,
                              etcd_kwargs=etcd_args)
     mon.run(args.interval)
+
+
+def add(args, one_args, etcd_args):
+    client = skydns.SkyDNSClient(args.domain, etcd_kwargs=etcd_args)
+    client.add_host(args.hostname, args.ip)
+
+
+def remove(args, one_args, etcd_args):
+    client = skydns.SkyDNSClient(args.domain, etcd_kwargs=etcd_args)
+    client.remove_host(args.hostname, args.ip)
 
 
 def main():
@@ -44,6 +55,16 @@ def main():
     daemon_parser.add_argument(
         '-i', '--interval', required=False, type=int, default=60,
         help="how often in seconds to poll ONE and update DNS")
+
+    add_parser = subparsers.add_parser('add')
+    add_parser.set_defaults(func=add)
+    add_parser.add_argument('hostname', help='name of host to add')
+    add_parser.add_argument('ip', help='ip of host to add')
+
+    remove_parser = subparsers.add_parser('remove')
+    remove_parser.set_defaults(func=remove)
+    remove_parser.add_argument('hostname', help='name of host to remove')
+    remove_parser.add_argument('ip', help='ip of host to remove')
 
     args = parser.parse_args()
 
