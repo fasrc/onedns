@@ -4,6 +4,19 @@ from onedns import monitor
 from onedns import logger
 
 
+def get_kwargs(args, prefix):
+    args_dict = vars(args)
+    one_args = dict((i.replace(prefix, ''), args_dict[i])
+                    for i in args_dict.keys() if i.startswith(prefix))
+    return one_args
+
+
+def daemon(args, one_args, etcd_args):
+    mon = monitor.OneMonitor(args.domain, one_kwargs=one_args,
+                             etcd_kwargs=etcd_args)
+    mon.run(args.interval)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='OneDNS - Dynamic DNS for OpenNebula')
@@ -24,14 +37,19 @@ def main():
                         help='etcd port to connect to')
     parser.add_argument('--etcd-cert', required=False, type=int,
                         help='path to etcd client ssl cert')
-    parser.add_argument('domain', help='DNS domain to use')
+    subparsers = parser.add_subparsers()
+
+    daemon_parser = subparsers.add_parser('daemon')
+    daemon_parser.set_defaults(func=daemon)
+    daemon_parser.add_argument(
+        '-i', '--interval', required=False, type=int, default=60,
+        help="how often in seconds to poll ONE and update DNS")
+
     args = parser.parse_args()
+
     logger.configure_onedns_logging(debug=args.debug)
-    args_dict = vars(args)
-    one_args = dict((i.replace('one_', ''), args_dict[i])
-                    for i in args_dict.keys() if i.startswith('one_'))
-    etcd_args = dict((i.replace('etcd_', ''), args_dict[i])
-                     for i in args_dict.keys() if i.startswith('etcd_'))
-    mon = monitor.OneMonitor(args.domain, one_kwargs=one_args,
-                             etcd_kwargs=etcd_args)
-    mon.run(args.interval)
+
+    one_args = get_kwargs(args, 'one_')
+    etcd_args = get_kwargs(args, 'etcd_')
+
+    args.func(args, one_args, etcd_args)
