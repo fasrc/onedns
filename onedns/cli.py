@@ -7,12 +7,11 @@ from onedns import logger
 def main():
     parser = argparse.ArgumentParser(
         description='OneDNS - Dynamic DNS for OpenNebula')
-    parser.add_argument('-d', '--debug', required=False,
-                        default=False, action='store_true',
+    parser.add_argument('--debug', required=False,
+                        action='store_true', default=False,
                         help='ONE controller host address')
-    parser.add_argument('-i', '--interval', required=False,
-                        type=int, default=60,
-                        help="how often in seconds to poll ONE and update DNS")
+    parser.add_argument('-d', '--domain', required=False, default='one.local',
+                        help='DNS domain to use')
     parser.add_argument('--one-address', required=False,
                         help='ONE controller host address')
     parser.add_argument('--one-secret', required=False,
