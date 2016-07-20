@@ -1,6 +1,7 @@
 import argparse
 
 from onedns import monitor
+from onedns import utils
 from onedns import logger
 from onedns.clients import skydns
 
@@ -26,6 +27,17 @@ def add(args, one_args, etcd_args):
 def remove(args, one_args, etcd_args):
     client = skydns.SkyDNSClient(args.domain, etcd_kwargs=etcd_args)
     client.remove_host(args.hostname, args.ip)
+
+
+def shell(args, one_args, etcd_args):
+    onemon = monitor.OneMonitor(args.domain, one_kwargs=one_args,
+                                etcd_kwargs=etcd_args)
+    oneclient = onemon._one
+    skyclient = onemon._skydns
+    etcdclient = skyclient._etcd
+    ns = dict(onemon=onemon, skyclient=skyclient, oneclient=oneclient,
+              etcdclient=etcdclient)
+    utils.shell(local_ns=ns)
 
 
 def main():
@@ -65,6 +77,9 @@ def main():
     remove_parser.set_defaults(func=remove)
     remove_parser.add_argument('hostname', help='name of host to remove')
     remove_parser.add_argument('ip', help='ip of host to remove')
+
+    shell_parser = subparsers.add_parser('shell')
+    shell_parser.set_defaults(func=shell)
 
     args = parser.parse_args()
 
