@@ -46,7 +46,7 @@ def shell(args, one_args, etcd_args):
     utils.shell(local_ns=ns)
 
 
-def main():
+def main(args=None):
     parser = argparse.ArgumentParser(
         description='OneDNS - Dynamic DNS for OpenNebula')
     parser.add_argument('--debug', required=False,
@@ -101,7 +101,7 @@ def main():
     shell_parser = subparsers.add_parser('shell')
     shell_parser.set_defaults(func=shell)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args=args)
 
     logger.configure_onedns_logging(debug=args.debug)
 
