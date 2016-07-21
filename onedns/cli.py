@@ -49,7 +49,7 @@ def shell(args, one_args, etcd_args):
     skyclient = onemon._skydns
     etcdclient = skyclient._etcd
     ns = dict(onemon=onemon, skyclient=skyclient, oneclient=oneclient,
-              etcdclient=etcdclient)
+              etcdclient=etcdclient, log=logger.log)
     utils.shell(local_ns=ns)
 
 
