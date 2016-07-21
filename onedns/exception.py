@@ -13,12 +13,10 @@ class OneDnsException(Exception):
         return '%s: %s' % (self.__class__.__name__, self.msg)
 
     def log(self, warn=False, show_tb=False):
-        if show_tb:
-            log.exception(self.explain())
-        elif warn:
-            log.warn(self.explain())
+        if warn:
+            log.warn(self.explain(), exc_info=show_tb)
         else:
-            log.error(self.explain())
+            log.error(self.explain(), exc_info=show_tb)
 
 
 class NoNetworksError(OneDnsException):
