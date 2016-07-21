@@ -1,8 +1,9 @@
 import argparse
 
-from onedns import monitor
+from onedns import api
 from onedns import utils
 from onedns import logger
+from onedns import monitor
 from onedns.clients import skydns
 
 
@@ -19,14 +20,26 @@ def daemon(args, one_args, etcd_args):
     mon.run(args.interval)
 
 
-def add(args, one_args, etcd_args):
+def add_host(args, one_args, etcd_args):
     client = skydns.SkyDNSClient(args.domain, etcd_kwargs=etcd_args)
     client.add_host(args.hostname, args.ip)
 
 
-def remove(args, one_args, etcd_args):
+def remove_host(args, one_args, etcd_args):
     client = skydns.SkyDNSClient(args.domain, etcd_kwargs=etcd_args)
     client.remove_host(args.hostname, args.ip)
+
+
+def add_vm(args, one_args, etcd_args):
+    client = api.OneDNS(args.domain, one_kwargs=one_args,
+                        etcd_kwargs=etcd_args)
+    client.add_vm_by_id(args.id)
+
+
+def remove_vm(args, one_args, etcd_args):
+    client = api.OneDNS(args.domain, one_kwargs=one_args,
+                        etcd_kwargs=etcd_args)
+    client.remove_vm_by_id(args.id)
 
 
 def shell(args, one_args, etcd_args):
@@ -69,14 +82,28 @@ def main():
         help="how often in seconds to poll ONE and update DNS")
 
     add_parser = subparsers.add_parser('add')
-    add_parser.set_defaults(func=add)
-    add_parser.add_argument('hostname', help='name of host to add')
-    add_parser.add_argument('ip', help='ip of host to add')
+    add_subparser = add_parser.add_subparsers()
 
-    remove_parser = subparsers.add_parser('remove')
-    remove_parser.set_defaults(func=remove)
-    remove_parser.add_argument('hostname', help='name of host to remove')
-    remove_parser.add_argument('ip', help='ip of host to remove')
+    add_vm_parser = add_subparser.add_parser('vm')
+    add_vm_parser.set_defaults(func=add_vm)
+    add_vm_parser.add_argument('id', type=int, help='id of the vm to add')
+
+    add_host_parser = add_subparser.add_parser('host')
+    add_host_parser.set_defaults(func=add_host)
+    add_host_parser.add_argument('hostname', help='name of host to add')
+    add_host_parser.add_argument('ip', help='ip of host to add')
+
+    rm_parser = subparsers.add_parser('remove')
+    rm_subparser = rm_parser.add_subparsers()
+
+    rm_vm_parser = rm_subparser.add_parser('vm')
+    rm_vm_parser.set_defaults(func=remove_vm)
+    rm_vm_parser.add_argument('id', type=int, help='id of the vm to add')
+
+    rm_host_parser = rm_subparser.add_parser('host')
+    rm_host_parser.set_defaults(func=remove_host)
+    rm_host_parser.add_argument('hostname', help='name of host to remove')
+    rm_host_parser.add_argument('ip', help='ip of host to remove')
 
     shell_parser = subparsers.add_parser('shell')
     shell_parser.set_defaults(func=shell)
