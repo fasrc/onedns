@@ -1,6 +1,12 @@
 from onedns.logger import log
 
 
+def get_kwargs_from_dict(d, prefix):
+    kwargs = dict((i.replace(prefix, ''), d[i])
+                  for i in d.keys() if i.startswith(prefix))
+    return kwargs
+
+
 def shell(local_ns={}):
     try:
         from IPython import embed

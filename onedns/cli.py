@@ -7,13 +7,6 @@ from onedns import monitor
 from onedns.clients import skydns
 
 
-def get_kwargs(args, prefix):
-    args_dict = vars(args)
-    one_args = dict((i.replace(prefix, ''), args_dict[i])
-                    for i in args_dict.keys() if i.startswith(prefix))
-    return one_args
-
-
 def daemon(args, one_args, etcd_args):
     mon = monitor.OneMonitor(args.domain, one_kwargs=one_args,
                              etcd_kwargs=etcd_args)
@@ -112,7 +105,8 @@ def main():
 
     logger.configure_onedns_logging(debug=args.debug)
 
-    one_args = get_kwargs(args, 'one_')
-    etcd_args = get_kwargs(args, 'etcd_')
+    args_dict = vars(args)
+    one_args = utils.get_kwargs_from_dict(args_dict, 'one_')
+    etcd_args = utils.get_kwargs_from_dict(args_dict, 'etcd_')
 
     args.func(args, one_args, etcd_args)
