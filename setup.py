@@ -22,6 +22,7 @@ setup(
         "oca>=4.10.0",
         "python-etcd>=0.4.3",
         "IPy>=0.83",
+        "dnslib>=0.9.6",
     ],
     entry_points=dict(console_scripts=['onedns = onedns.cli:main']),
     zip_safe=False
