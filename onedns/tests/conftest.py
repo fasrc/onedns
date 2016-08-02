@@ -1,6 +1,6 @@
 import pytest
 
-from onedns import server
+from onedns import resolver
 
 
 DOMAIN = 'onedns.test'
@@ -10,7 +10,7 @@ PORT = 9053
 
 @pytest.fixture(scope="function")
 def dns(request):
-    dns = server.DynamicResolver(domain=DOMAIN)
+    dns = resolver.DynamicResolver(domain=DOMAIN)
     dns.start(dns_address=INTERFACE, dns_port=PORT, tcp=True)
     request.addfinalizer(dns.close)
     return dns
