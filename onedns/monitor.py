@@ -5,7 +5,7 @@ from onedns import api
 
 class OneMonitor(api.OneDNS):
     """
-    Daemon that syncs OpenNebula VMs with SkyDNS
+    Daemon that syncs OpenNebula VMs with OneDNS
     """
     def run(self, interval=60):
         while True:

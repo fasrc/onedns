@@ -1,18 +1,16 @@
 from onedns import exception
 from onedns.clients import one
-from onedns.clients import skydns
 from onedns.logger import log
 
 
 class OneDNS(object):
     """
-    This class bridges the gap between OpenNebula and SkyDNS APIs. It primarily
-    provides convenience methods for adding/removing VMs to SkyDNS.
+    This class provides convenience methods for adding/removing VMs to the
+    DynamicResolver.
     """
 
-    def __init__(self, domain, one_kwargs={}, etcd_kwargs={}):
+    def __init__(self, domain, one_kwargs={}):
         self._one = one.OneClient(**one_kwargs)
-        self._skydns = skydns.SkyDNSClient(domain, etcd_kwargs=etcd_kwargs)
 
     def _check_for_networks(self, vm):
         if not hasattr(vm.template, 'nics'):
@@ -34,14 +32,14 @@ class OneDNS(object):
         dns_entries = self._get_vm_dns_entries(vm)
         log.info("Adding VM {id}: {vm}".format(id=vm.id, vm=vm.name))
         for name, ip in dns_entries.items():
-            self._skydns.add_host(name, ip)
+            self.add_host(name, ip)
 
     def remove_vm(self, vm):
         self._check_for_networks(vm)
         dns_entries = self._get_vm_dns_entries(vm)
         log.info("Removing VM {id}: {vm}".format(id=vm.id, vm=vm.name))
         for name, ip in dns_entries.items():
-            self._skydns.remove_host(name, ip)
+            self.remove_host(name, ip)
 
     def add_vm_by_id(self, vm_id):
         vm = self._one.get_vm_by_id(vm_id)

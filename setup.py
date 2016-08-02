@@ -20,7 +20,6 @@ setup(
     long_description=README,
     install_requires=[
         "oca>=4.10.0",
-        "python-etcd>=0.4.3",
         "IPy>=0.83",
         "dnslib>=0.9.6",
     ],

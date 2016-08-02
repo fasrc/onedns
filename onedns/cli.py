@@ -4,45 +4,35 @@ from onedns import api
 from onedns import utils
 from onedns import logger
 from onedns import monitor
-from onedns.clients import skydns
 
 
-def daemon(args, one_args, etcd_args):
-    mon = monitor.OneMonitor(args.domain, one_kwargs=one_args,
-                             etcd_kwargs=etcd_args)
+def daemon(args, one_args):
+    mon = monitor.OneMonitor(args.domain, one_kwargs=one_args)
     mon.run(args.interval)
 
 
-def add_host(args, one_args, etcd_args):
-    client = skydns.SkyDNSClient(args.domain, etcd_kwargs=etcd_args)
-    client.add_host(args.hostname, args.ip)
+def add_host(args, one_args):
+    pass
 
 
-def remove_host(args, one_args, etcd_args):
-    client = skydns.SkyDNSClient(args.domain, etcd_kwargs=etcd_args)
-    client.remove_host(args.hostname, args.ip)
+def remove_host(args, one_args):
+    pass
 
 
-def add_vm(args, one_args, etcd_args):
-    client = api.OneDNS(args.domain, one_kwargs=one_args,
-                        etcd_kwargs=etcd_args)
+def add_vm(args, one_args):
+    client = api.OneDNS(args.domain, one_kwargs=one_args)
     client.add_vm_by_id(args.id)
 
 
-def remove_vm(args, one_args, etcd_args):
-    client = api.OneDNS(args.domain, one_kwargs=one_args,
-                        etcd_kwargs=etcd_args)
+def remove_vm(args, one_args):
+    client = api.OneDNS(args.domain, one_kwargs=one_args)
     client.remove_vm_by_id(args.id)
 
 
-def shell(args, one_args, etcd_args):
-    onemon = monitor.OneMonitor(args.domain, one_kwargs=one_args,
-                                etcd_kwargs=etcd_args)
+def shell(args, one_args):
+    onemon = monitor.OneMonitor(args.domain, one_kwargs=one_args)
     oneclient = onemon._one
-    skyclient = onemon._skydns
-    etcdclient = skyclient._etcd
-    ns = dict(onemon=onemon, skyclient=skyclient, oneclient=oneclient,
-              etcdclient=etcdclient, log=logger.log)
+    ns = dict(onemon=onemon, oneclient=oneclient, log=logger.log)
     utils.shell(local_ns=ns)
 
 
@@ -60,12 +50,6 @@ def main(args=None):
                         help='ONE credentials to use (e.g. user:key)')
     parser.add_argument('--one-proxy', required=False,
                         help='proxy host to use to connect to ONE controller')
-    parser.add_argument('--etcd-host', required=False,
-                        help='etcd host to connect to')
-    parser.add_argument('--etcd-port', required=False, type=int, default=4001,
-                        help='etcd port to connect to')
-    parser.add_argument('--etcd-cert', required=False, type=int,
-                        help='path to etcd client ssl cert')
     subparsers = parser.add_subparsers()
 
     daemon_parser = subparsers.add_parser('daemon')
@@ -107,6 +91,5 @@ def main(args=None):
 
     args_dict = vars(args)
     one_args = utils.get_kwargs_from_dict(args_dict, 'one_')
-    etcd_args = utils.get_kwargs_from_dict(args_dict, 'etcd_')
 
-    args.func(args, one_args, etcd_args)
+    args.func(args, one_args)
