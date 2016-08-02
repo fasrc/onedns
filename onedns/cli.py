@@ -1,14 +1,14 @@
 import argparse
 
-from onedns import api
 from onedns import utils
+from onedns import server
 from onedns import logger
-from onedns import monitor
 
 
 def daemon(args, one_args):
-    mon = monitor.OneMonitor(args.domain, one_kwargs=one_args)
-    mon.run(args.interval)
+    srv = server.OneDNS(args.domain, one_kwargs=one_args)
+    srv.sync()
+    srv.daemon(dns_port=args.dns_port)
 
 
 def add_host(args, one_args):
@@ -30,9 +30,9 @@ def remove_vm(args, one_args):
 
 
 def shell(args, one_args):
-    onemon = monitor.OneMonitor(args.domain, one_kwargs=one_args)
-    oneclient = onemon._one
-    ns = dict(onemon=onemon, oneclient=oneclient, log=logger.log)
+    srv = server.OneDNS(args.domain, one_kwargs=one_args)
+    oneclient = srv._one
+    ns = dict(one_dns=srv, oneclient=oneclient, log=logger.log)
     utils.shell(local_ns=ns)
 
 
@@ -55,8 +55,8 @@ def main(args=None):
     daemon_parser = subparsers.add_parser('daemon')
     daemon_parser.set_defaults(func=daemon)
     daemon_parser.add_argument(
-        '-i', '--interval', required=False, type=int, default=60,
-        help="how often in seconds to poll ONE and update DNS")
+        '--dns-port', required=False, default=5053, type=int,
+        help="port for DNS server to listen on")
 
     add_parser = subparsers.add_parser('add')
     add_subparser = add_parser.add_subparsers()

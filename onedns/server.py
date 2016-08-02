@@ -1,15 +1,17 @@
+from onedns import resolver
 from onedns import exception
 from onedns.clients import one
 from onedns.logger import log
 
 
-class OneDNS(object):
+class OneDNS(resolver.DynamicResolver):
     """
     This class provides convenience methods for adding/removing VMs to the
     DynamicResolver.
     """
 
     def __init__(self, domain, one_kwargs={}):
+        super(OneDNS, self).__init__(domain)
         self._one = one.OneClient(**one_kwargs)
 
     def _check_for_networks(self, vm):
@@ -50,7 +52,9 @@ class OneDNS(object):
         return self.remove_vm(vm)
 
     def sync(self):
-        for vm in self._one.vms():
+        vms = self._one.vms()
+        self.clear()
+        for vm in vms:
             try:
                 self.add_vm(vm)
             except exception.NoNetworksError as e:
