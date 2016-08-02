@@ -12,8 +12,7 @@ formatter = logging.Formatter(LOG_FORMAT)
 console.setFormatter(formatter)
 
 
-def configure_onedns_logging(use_syslog=False, syslog_device='/dev/log',
-                             debug=False):
+def configure_onedns_logging(debug=False):
     """
     Configure logging for onedns *application* code
 
@@ -21,9 +20,6 @@ def configure_onedns_logging(use_syslog=False, syslog_device='/dev/log',
     developers using onedns as a library can configure logging as they see fit.
     This method is used in onedns's application code (i.e.  the 'onedns'
     command) to toggle onedns's application specific formatters/handlers
-
-    use_syslog - enable logging all messages to syslog. currently only works if
-    /dev/log exists on the system (standard for most Linux distros)
     """
     log.setLevel(logging.DEBUG)
     if debug:
@@ -31,8 +27,3 @@ def configure_onedns_logging(use_syslog=False, syslog_device='/dev/log',
     else:
         console.setLevel(logging.INFO)
     log.addHandler(console)
-    if use_syslog and os.path.exists(syslog_device):
-        log.debug("Logging to %s" % syslog_device)
-        syslog_handler = logging.handlers.SysLogHandler(address=syslog_device)
-        syslog_handler.setLevel(logging.DEBUG)
-        log.addHandler(syslog_handler)
