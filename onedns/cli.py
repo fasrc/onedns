@@ -11,24 +11,6 @@ def daemon(args, one_args):
     srv.daemon(dns_port=args.dns_port)
 
 
-def add_host(args, one_args):
-    pass
-
-
-def remove_host(args, one_args):
-    pass
-
-
-def add_vm(args, one_args):
-    client = api.OneDNS(args.domain, one_kwargs=one_args)
-    client.add_vm_by_id(args.id)
-
-
-def remove_vm(args, one_args):
-    client = api.OneDNS(args.domain, one_kwargs=one_args)
-    client.remove_vm_by_id(args.id)
-
-
 def shell(args, one_args):
     srv = server.OneDNS(args.domain, one_kwargs=one_args)
     oneclient = srv._one
@@ -57,30 +39,6 @@ def main(args=None):
     daemon_parser.add_argument(
         '--dns-port', required=False, default=5053, type=int,
         help="port for DNS server to listen on")
-
-    add_parser = subparsers.add_parser('add')
-    add_subparser = add_parser.add_subparsers()
-
-    add_vm_parser = add_subparser.add_parser('vm')
-    add_vm_parser.set_defaults(func=add_vm)
-    add_vm_parser.add_argument('id', type=int, help='id of the vm to add')
-
-    add_host_parser = add_subparser.add_parser('host')
-    add_host_parser.set_defaults(func=add_host)
-    add_host_parser.add_argument('hostname', help='name of host to add')
-    add_host_parser.add_argument('ip', help='ip of host to add')
-
-    rm_parser = subparsers.add_parser('remove')
-    rm_subparser = rm_parser.add_subparsers()
-
-    rm_vm_parser = rm_subparser.add_parser('vm')
-    rm_vm_parser.set_defaults(func=remove_vm)
-    rm_vm_parser.add_argument('id', type=int, help='id of the vm to add')
-
-    rm_host_parser = rm_subparser.add_parser('host')
-    rm_host_parser.set_defaults(func=remove_host)
-    rm_host_parser.add_argument('hostname', help='name of host to remove')
-    rm_host_parser.add_argument('ip', help='ip of host to remove')
 
     shell_parser = subparsers.add_parser('shell')
     shell_parser.set_defaults(func=shell)
