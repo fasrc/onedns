@@ -1,6 +1,7 @@
 import pytest
 
 from onedns import resolver
+from onedns.clients import one
 
 
 DOMAIN = 'onedns.test'
@@ -14,3 +15,8 @@ def dns(request):
     dns.start(dns_address=INTERFACE, dns_port=PORT, tcp=True)
     request.addfinalizer(dns.close)
     return dns
+
+
+@pytest.fixture(scope="module")
+def oneclient(request):
+    return one.OneClient()
