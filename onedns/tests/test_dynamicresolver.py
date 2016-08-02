@@ -49,3 +49,9 @@ def test_get_fqdn(dns, name, ip):
     dns.add_host(name, ip)
     assert dns.zone[0][0].label[0] == name.split('.')[0]
     assert '.'.join(dns.zone[0][0].label[1:]) == conftest.DOMAIN
+
+
+def test_daemon(dns):
+    dns.close()
+    dns.daemon(dns_address=conftest.INTERFACE, dns_port=conftest.PORT,
+               tcp=True, testing=True)

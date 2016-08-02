@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+import time
 
 import dnslib
 from dnslib import server
@@ -100,3 +101,12 @@ class DynamicResolver(server.BaseResolver):
             if srv:
                 srv.stop()
                 srv.server.socket.close()
+
+    def daemon(self, *args, **kwargs):
+        testing = kwargs.pop('testing', False)
+        if self._udp_server is None or not self._udp_server.isAlive():
+            self.start(*args, **kwargs)
+        while self._udp_server.isAlive():
+            time.sleep(1)
+            if testing:
+                break
