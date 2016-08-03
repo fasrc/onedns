@@ -17,6 +17,9 @@ def dns(request):
     return dns
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def oneclient(request):
+    """
+    NOTE: All fixtures must be function scope to work with VCRPY cassettes
+    """
     return one.OneClient()

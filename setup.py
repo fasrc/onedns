@@ -29,6 +29,7 @@ setup(
     tests_require=[
         "pytest>=2.9.2",
         "testfixtures>=4.10.0",
+        "vcrpy>=1.9.0",
     ],
     entry_points=dict(console_scripts=['onedns = onedns.cli:main']),
     zip_safe=False
