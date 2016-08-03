@@ -8,5 +8,6 @@ vcr = VCR(
         os.path.dirname(os.path.realpath(__file__)), 'fixtures/oneclient'
     ),
     record_mode='once',
+    decode_compressed_response=True,
     path_transformer=VCR.ensure_suffix('.yaml'),
 )
