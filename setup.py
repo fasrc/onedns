@@ -28,6 +28,7 @@ setup(
     ],
     tests_require=[
         "pytest>=2.9.2",
+        "pytest-cov>=2.3.0",
         "testfixtures>=4.10.0",
         "vcrpy>=1.9.0",
         "mock>=2.0.0",
