@@ -3,6 +3,7 @@ import dnslib
 
 from IPy import IP
 
+from onedns.tests import utils
 from onedns.tests import conftest
 
 
@@ -23,9 +24,7 @@ def test_lookup(dns, qname, qtype, output):
     dns.clear()
     dns.add_host(HOST, HOST_IP)
     try:
-        q = dnslib.DNSRecord(q=dnslib.DNSQuestion(qname, qtype))
-        a_pkt = q.send(conftest.INTERFACE, conftest.PORT, tcp=False)
-        a = dnslib.DNSRecord.parse(a_pkt)
+        a = utils.dnsquery(qname, qtype)
         assert a.short() == output
     finally:
         dns.close()
@@ -34,10 +33,7 @@ def test_lookup(dns, qname, qtype, output):
 def test_nxdomain(dns):
     dns.clear()
     try:
-        q = dnslib.DNSRecord(q=dnslib.DNSQuestion(
-            'unknownhost', dnslib.QTYPE.A))
-        a_pkt = q.send(conftest.INTERFACE, conftest.PORT, tcp=False)
-        a = dnslib.DNSRecord.parse(a_pkt)
+        a = utils.dnsquery('unknownhost', dnslib.QTYPE.A)
         assert dnslib.RCODE.get(a.header.rcode) == 'NXDOMAIN'
     finally:
         dns.close()
