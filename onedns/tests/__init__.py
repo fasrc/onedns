@@ -9,7 +9,7 @@ def scrub_auth(request):
     xml = StringIO.StringIO(request.body)
     tree = ET.parse(xml)
     root = tree.getroot()
-    auth_param = tree.findall('./params/param/value/string')[0]
+    auth_param = root.findall('./params/param/value/string')[0]
     auth_param.text = 'someuser:sometoken'
     scrubbed = StringIO.StringIO()
     tree.write(scrubbed)

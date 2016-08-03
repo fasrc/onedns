@@ -32,6 +32,7 @@ class DynamicResolver(server.BaseResolver):
         reply = request.reply()
         qname = request.q.qname
         qtype = dnslib.QTYPE[request.q.qtype]
+        A_RECORDS = ['A', 'AAAA']
         for name, rtype, rr in self.zone:
             # Check if label & type match
             if qname == name and (qtype in [rtype, 'ANY'] or rtype == 'CNAME'):
@@ -40,7 +41,7 @@ class DynamicResolver(server.BaseResolver):
                 # add in additional section
                 if rtype in ['CNAME', 'NS', 'MX', 'PTR']:
                     for a_name, a_rtype, a_rr in self.zone:
-                        if a_name == rr.rdata.label and a_rtype in ['A', 'AAAA']:
+                        if a_name == rr.rdata.label and a_rtype in A_RECORDS:
                             reply.add_ar(a_rr)
         if not reply.rr:
             reply.header.rcode = dnslib.RCODE.NXDOMAIN

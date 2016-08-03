@@ -8,7 +8,7 @@ IPY = mock.MagicMock()
 IPY.embed = mock.MagicMock()
 
 IPY_MODULES = {
-  'IPython': IPY,
+    'IPython': IPY,
 }
 
 
