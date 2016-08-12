@@ -51,8 +51,8 @@ class OneDNS(resolver.DynamicResolver):
         vm = self._one.get_vm_by_id(vm_id)
         return self.remove_vm(vm)
 
-    def sync(self):
-        vms = self._one.vms()
+    def sync(self, vms=None):
+        vms = vms or self._one.vms()
         self.clear()
         for vm in vms:
             try:
