@@ -1,6 +1,7 @@
 import pytest
 
 from onedns import resolver
+from onedns.tests import vcr
 from onedns.clients import one
 
 
@@ -23,3 +24,9 @@ def oneclient(request):
     NOTE: All fixtures must be function scope to work with VCRPY cassettes
     """
     return one.OneClient()
+
+
+@pytest.fixture(scope="function")
+@vcr.use_cassette()
+def vms(oneclient):
+    return oneclient.vms()

@@ -6,9 +6,7 @@ import oca
 from oca import vm
 
 
-@vcr.use_cassette()
-def test_get_vms(oneclient):
-    vms = oneclient.vms()
+def test_get_vms(vms):
     assert isinstance(vms, vm.VirtualMachinePool)
     assert len(vms) > 0
 
