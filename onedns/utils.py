@@ -3,6 +3,15 @@ import os
 from onedns.logger import log
 
 
+def get_fqdn(name, domain):
+    if not name.endswith(domain):
+        if name.endswith('.'):
+            return name + domain
+        else:
+            return '.'.join([name, domain])
+    return name
+
+
 def get_kwargs_from_dict(d, prefix, lower=False):
     tups_list = []
     for i in d:

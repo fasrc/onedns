@@ -8,6 +8,8 @@ from dnslib import dns
 
 from IPy import IP
 
+from onedns import utils
+
 
 class DynamicResolver(server.BaseResolver):
     """
@@ -55,12 +57,7 @@ class DynamicResolver(server.BaseResolver):
         self._add_reverse(ip, name)
 
     def _get_fqdn(self, name):
-        if not name.endswith(self.domain):
-            if name.endswith('.'):
-                return name + self.domain
-            else:
-                return '.'.join([name, self.domain])
-        return name
+        return utils.get_fqdn(name, self.domain)
 
     def _add_forward(self, name, ip):
         f = dnslib.RR(rname=dnslib.DNSLabel(self._get_fqdn(name)),
