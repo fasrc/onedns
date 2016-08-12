@@ -52,27 +52,30 @@ class DynamicResolver(server.BaseResolver):
     def clear(self):
         self.zone = []
 
-    def add_host(self, name, ip):
-        self._add_forward(name, ip)
-        self._add_reverse(ip, name)
+    def add_host(self, name, ip, zone=None):
+        zone = zone or self.zone
+        self._add_forward(name, ip, zone=zone)
+        self._add_reverse(ip, name, zone=zone)
 
     def _get_fqdn(self, name):
         return utils.get_fqdn(name, self.domain)
 
-    def _add_forward(self, name, ip):
+    def _add_forward(self, name, ip, zone=None):
+        zone = zone or self.zone
         f = dnslib.RR(rname=dnslib.DNSLabel(self._get_fqdn(name)),
                       rtype=dnslib.QTYPE.reverse['A'],
                       rclass=dnslib.CLASS.reverse['IN'],
                       rdata=dns.A(ip))
-        self.zone.append((f.rname, 'A', f))
+        zone.append((f.rname, 'A', f))
 
-    def _add_reverse(self, ip, name):
+    def _add_reverse(self, ip, name, zone=None):
+        zone = zone or self.zone
         ip = IP(ip)
         r = dnslib.RR(rname=dnslib.DNSLabel(ip.reverseName()),
                       rtype=dnslib.QTYPE.reverse['PTR'],
                       rclass=dnslib.CLASS.reverse['IN'],
                       rdata=dns.PTR(self._get_fqdn(name)))
-        self.zone.append((r.rname, 'PTR', r))
+        zone.append((r.rname, 'PTR', r))
 
     def start(self, dns_address='0.0.0.0', dns_port=53,
               api_address='127.0.0.1', api_port=8000, tcp=False, udplen=0,
