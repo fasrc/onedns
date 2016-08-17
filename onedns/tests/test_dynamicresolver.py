@@ -1,28 +1,14 @@
 import pytest
 import dnslib
 
-from IPy import IP
-
 from onedns.tests import utils
 from onedns.tests import conftest
 
 
-HOST = '.'.join(['testhost', conftest.DOMAIN])
-HOST_IP = '10.242.118.112'
-TEST_LOOKUP_DATA = [
-    (HOST, dnslib.QTYPE.A, HOST_IP),
-    (IP(HOST_IP).reverseName(), dnslib.QTYPE.PTR, HOST + '.')
-]
-TEST_GET_FQDN_DATA = [
-    ('hostwithnodot', '192.168.1.23'),
-    ('hostwithdot.', '192.168.1.19'),
-]
-
-
-@pytest.mark.parametrize("qname,qtype,output", TEST_LOOKUP_DATA)
+@pytest.mark.parametrize("qname,qtype,output", conftest.TEST_LOOKUP_DATA)
 def test_lookup(dns, qname, qtype, output):
     dns.clear()
-    dns.add_host(HOST, HOST_IP)
+    dns.add_host(conftest.HOST, conftest.HOST_IP)
     try:
         a = utils.dnsquery(qname, qtype)
         assert a.short() == output
@@ -39,7 +25,7 @@ def test_nxdomain(dns):
         dns.close()
 
 
-@pytest.mark.parametrize("name,ip", TEST_GET_FQDN_DATA)
+@pytest.mark.parametrize("name,ip", conftest.TEST_GET_FQDN_DATA)
 def test_get_fqdn(dns, name, ip):
     dns.clear()
     dns.add_host(name, ip)

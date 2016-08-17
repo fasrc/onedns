@@ -1,15 +1,17 @@
 import os
 
+import dnslib
+
 from onedns.logger import log
 
 
 def get_fqdn(name, domain):
-    if not name.endswith(domain):
-        if name.endswith('.'):
-            return name + domain
-        else:
-            return '.'.join([name, domain])
-    return name
+    domain = dnslib.DNSLabel(domain)
+    name = dnslib.DNSLabel(name)
+    if name.label[-1 * len(domain.label):] != domain.label:
+        return dnslib.DNSLabel(name.label + domain.label).idna()
+    else:
+        return name.idna()
 
 
 def get_kwargs_from_dict(d, prefix, lower=False):
