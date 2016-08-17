@@ -3,7 +3,6 @@ import dnslib
 from IPy import IP
 
 from onedns import zone
-from onedns import server
 from onedns import resolver
 from onedns.tests import vcr
 from onedns.clients import one
@@ -29,6 +28,7 @@ TEST_GET_FORWARD_DATA = [
     HOST,
     HOST + '.',
 ]
+
 
 @pytest.fixture(scope="function")
 def dns(request):

@@ -1,14 +1,16 @@
-# -*- coding: utf-8 -*-
 from __future__ import print_function
 import time
+import threading
 
 import dnslib
 from dnslib import server
-from dnslib import dns
 
-from IPy import IP
+from wrapt import synchronized
 
+from onedns import zone
 from onedns import utils
+from onedns import exception
+from onedns.logger import log
 
 
 class DynamicResolver(server.BaseResolver):
@@ -16,16 +18,18 @@ class DynamicResolver(server.BaseResolver):
     Dynamic In-Memory DNS Resolver
     """
 
-    def __init__(self, domain, one_kwargs={}):
+    _lock = threading.RLock()
+
+    def __init__(self, domain):
         """
         Initialise resolver from zone list
         Stores RRs as a list of (label, type, rr) tuples
         """
-        self.domain = domain
-        self.zone = []
+        self.zone = zone.Zone(domain)
         self._tcp_server = None
         self._udp_server = None
 
+    @synchronized(_lock)
     def resolve(self, request, handler):
         """
         Respond to DNS request - parameters are request packet & handler.
@@ -33,57 +37,46 @@ class DynamicResolver(server.BaseResolver):
         """
         reply = request.reply()
         qname = request.q.qname
-        qtype = dnslib.QTYPE[request.q.qtype]
-        A_RECORDS = ['A', 'AAAA']
-        for name, rtype, rr in self.zone:
-            # Check if label & type match
-            if qname == name and (qtype in [rtype, 'ANY'] or rtype == 'CNAME'):
-                reply.add_answer(rr)
-                # Check for A/AAAA records associated with reply and
-                # add in additional section
-                if rtype in ['CNAME', 'NS', 'MX', 'PTR']:
-                    for a_name, a_rtype, a_rr in self.zone:
-                        if a_name == rr.rdata.label and a_rtype in A_RECORDS:
-                            reply.add_ar(a_rr)
-        if not reply.rr:
+        qtype = request.q.qtype
+        try:
+            if qtype in (dnslib.QTYPE.A, dnslib.QTYPE.AAAA):
+                forward = self.zone.get_forward(qname)
+                reply.add_answer(forward)
+            elif qtype == dnslib.QTYPE.PTR:
+                reverse = self.zone.get_reverse(
+                    utils.reverse_to_ip(qname.idna()))
+                reply.add_answer(reverse)
+                forward = self.zone.get_forward(str(reverse.rdata))
+                if forward:
+                    reply.add_ar(forward)
+        except exception.RecordDoesNotExist:
             reply.header.rcode = dnslib.RCODE.NXDOMAIN
         return reply
 
+    @synchronized(_lock)
     def clear(self):
-        self.zone = []
+        self.zone.clear()
 
-    def add_host(self, name, ip, zone=None):
-        zone = zone or self.zone
-        self._add_forward(name, ip, zone=zone)
-        self._add_reverse(ip, name, zone=zone)
+    @synchronized(_lock)
+    def load(self, zone):
+        self.zone = zone
 
-    def _get_fqdn(self, name):
-        return utils.get_fqdn(name, self.domain)
+    @synchronized(_lock)
+    def add_host(self, name, ip):
+        self.zone.add_host(name, ip)
 
-    def _add_forward(self, name, ip, zone=None):
-        zone = zone or self.zone
-        f = dnslib.RR(rname=dnslib.DNSLabel(self._get_fqdn(name)),
-                      rtype=dnslib.QTYPE.reverse['A'],
-                      rclass=dnslib.CLASS.reverse['IN'],
-                      rdata=dns.A(ip))
-        zone.append((f.rname, 'A', f))
-
-    def _add_reverse(self, ip, name, zone=None):
-        zone = zone or self.zone
-        ip = IP(ip)
-        r = dnslib.RR(rname=dnslib.DNSLabel(ip.reverseName()),
-                      rtype=dnslib.QTYPE.reverse['PTR'],
-                      rclass=dnslib.CLASS.reverse['IN'],
-                      rdata=dns.PTR(self._get_fqdn(name)))
-        zone.append((r.rname, 'PTR', r))
+    @synchronized(_lock)
+    def remove_host(self, name, ip):
+        self.zone.remove_host(name, ip)
 
     def start(self, dns_address='0.0.0.0', dns_port=53,
               api_address='127.0.0.1', api_port=8000, tcp=False, udplen=0,
-              log="request,reply,truncated,error", log_prefix=False):
-        logger = server.DNSLogger(log, log_prefix)
+              log_components="request,reply,truncated,error",
+              log_prefix=False):
+        logger = server.DNSLogger(log_components, log_prefix)
 
-        print("Starting OneDNS (%s:%d) [%s]" %
-              (dns_address or "*", dns_port, "UDP/TCP" if tcp else "UDP"))
+        log.info("Starting OneDNS (%s:%d) [%s]" %
+                 (dns_address or "*", dns_port, "UDP/TCP" if tcp else "UDP"))
 
         server.DNSHandler.udplen = udplen
 

@@ -1,6 +1,11 @@
 import os
 
+import dns.name
+import dns.reversename
+
 import dnslib
+
+from IPy import IP
 
 from onedns.logger import log
 
@@ -12,6 +17,11 @@ def get_fqdn(name, domain):
         return dnslib.DNSLabel(name.label + domain.label).idna()
     else:
         return name.idna()
+
+
+def reverse_to_ip(reverse):
+    rname = dns.name.Name(reverse.split('.'))
+    return IP(dns.reversename.to_address(rname))
 
 
 def get_kwargs_from_dict(d, prefix, lower=False):

@@ -22,6 +22,8 @@ setup(
         "oca>=4.10.0",
         "IPy>=0.83",
         "dnslib>=0.9.6",
+        "dnspython>=1.14.0",
+        "wrapt>=1.10.8",
     ],
     setup_requires=[
         'pytest-runner>=2.9'
