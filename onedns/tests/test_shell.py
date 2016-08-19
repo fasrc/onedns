@@ -14,6 +14,7 @@ IPY_MODULES = {
 
 @mock.patch.dict('sys.modules', IPY_MODULES)
 def test_with_ipython():
+    IPY.embed.reset_mock()
     from onedns import utils
     ns = dict(test=True)
     utils.shell(local_ns=ns)

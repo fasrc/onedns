@@ -5,20 +5,22 @@ from onedns import server
 from onedns import logger
 
 
-def daemon(args, one_args):
+def daemon(args, one_args, **kwargs):
+    testing = kwargs.get('testing', False)
+    vms = kwargs.get('vms')
     srv = server.OneDNS(args.domain, one_kwargs=one_args)
-    srv.sync()
-    srv.daemon(dns_port=args.dns_port)
+    srv.sync(vms=vms)
+    srv.daemon(dns_port=args.dns_port, testing=testing)
 
 
-def shell(args, one_args):
+def shell(args, one_args, **kwargs):
     srv = server.OneDNS(args.domain, one_kwargs=one_args)
     oneclient = srv._one
     ns = dict(one_dns=srv, oneclient=oneclient, log=logger.log)
     utils.shell(local_ns=ns)
 
 
-def main(args=None):
+def get_parser():
     parser = argparse.ArgumentParser(
         description='OneDNS - Dynamic DNS for OpenNebula')
     parser.add_argument('--debug', required=False,
@@ -42,12 +44,13 @@ def main(args=None):
 
     shell_parser = subparsers.add_parser('shell')
     shell_parser.set_defaults(func=shell)
+    return parser
 
-    args = parser.parse_args(args=args)
 
+def main(**kwargs):
+    parser = get_parser()
+    args = parser.parse_args(args=kwargs.pop('args', None))
     logger.configure_onedns_logging(debug=args.debug)
-
     args_dict = vars(args)
     one_args = utils.get_kwargs_from_dict(args_dict, 'one_')
-
-    args.func(args, one_args)
+    args.func(args, one_args, **kwargs)
