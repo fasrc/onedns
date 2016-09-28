@@ -31,10 +31,24 @@ class OneDNS(resolver.DynamicResolver):
             entries[nicname] = nic.ip
         return entries
 
+    def _check_for_duplicates(self, vm_id, name, ip, zone=None):
+        z = zone or self.zone
+        try:
+            f = z.get_forward(name)
+            raise exception.DuplicateVMError(vm_id, f, ip)
+        except exception.RecordDoesNotExist:
+            pass
+        try:
+            r = z.get_reverse(ip)
+            raise exception.DuplicateVMError(vm_id, ip, r)
+        except exception.RecordDoesNotExist:
+            pass
+
     def add_vm(self, vm, zone=None):
         dns_entries = self._get_vm_dns_entries(vm)
         log.info("Adding VM {id}: {vm}".format(id=vm.id, vm=vm.name))
         for name, ip in dns_entries.items():
+            self._check_for_duplicates(vm.id, name, ip, zone=zone)
             self.add_host(name, ip, zone=zone)
 
     def remove_vm(self, vm, zone=None):
@@ -54,9 +68,12 @@ class OneDNS(resolver.DynamicResolver):
     def sync(self, vms=None):
         z = zone.Zone(self.domain)
         vms = vms or self._one.vms()
+        vms.sort(key=lambda x: x.id)
         for vm in vms:
             try:
                 self.add_vm(vm, zone=z)
             except exception.NoNetworksError as e:
+                e.log(warn=True)
+            except exception.DuplicateVMError as e:
                 e.log(warn=True)
         self.load(z)

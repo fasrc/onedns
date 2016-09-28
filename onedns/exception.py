@@ -36,3 +36,11 @@ class RecordDoesNotExist(OneDnsException):
         self.msg = "Record Does Not Exist: {}".format(key)
         if val is not None:
             self.msg += " -> {}".format(val)
+
+
+class DuplicateVMError(OneDnsException):
+    """
+    Raised when two or more VMs share a name or IP
+    """
+    def __init__(self, vmid, key, val):
+        self.msg = "VM one-{} has a duplicate: {} -> {}".format(vmid, key, val)
