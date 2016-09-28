@@ -25,6 +25,7 @@ class DynamicResolver(server.BaseResolver):
         Initialise resolver from zone list
         Stores RRs as a list of (label, type, rr) tuples
         """
+        self.domain = domain
         self.zone = zone.Zone(domain)
         self._tcp_server = None
         self._udp_server = None

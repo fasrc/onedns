@@ -1,3 +1,4 @@
+from onedns import zone
 from onedns import resolver
 from onedns import exception
 from onedns.clients import one
@@ -19,6 +20,7 @@ class OneDNS(resolver.DynamicResolver):
             raise exception.NoNetworksError(vm)
 
     def _get_vm_dns_entries(self, vm):
+        self._check_for_networks(vm)
         entries = {}
         hostname = vm.name
         primary_ip = vm.template.nics[0].ip
@@ -29,19 +31,17 @@ class OneDNS(resolver.DynamicResolver):
             entries[nicname] = nic.ip
         return entries
 
-    def add_vm(self, vm):
-        self._check_for_networks(vm)
+    def add_vm(self, vm, zone=None):
         dns_entries = self._get_vm_dns_entries(vm)
         log.info("Adding VM {id}: {vm}".format(id=vm.id, vm=vm.name))
         for name, ip in dns_entries.items():
-            self.add_host(name, ip)
+            self.add_host(name, ip, zone=zone)
 
-    def remove_vm(self, vm):
-        self._check_for_networks(vm)
+    def remove_vm(self, vm, zone=None):
         dns_entries = self._get_vm_dns_entries(vm)
         log.info("Removing VM {id}: {vm}".format(id=vm.id, vm=vm.name))
         for name, ip in dns_entries.items():
-            self.remove_host(name, ip)
+            self.remove_host(name, ip, zone=zone)
 
     def add_vm_by_id(self, vm_id):
         vm = self._one.get_vm_by_id(vm_id)
@@ -52,10 +52,11 @@ class OneDNS(resolver.DynamicResolver):
         return self.remove_vm(vm)
 
     def sync(self, vms=None):
+        z = zone.Zone(self.domain)
         vms = vms or self._one.vms()
-        self.clear()
         for vm in vms:
             try:
-                self.add_vm(vm)
+                self.add_vm(vm, zone=z)
             except exception.NoNetworksError as e:
                 e.log(warn=True)
+        self.load(z)
