@@ -62,12 +62,14 @@ class DynamicResolver(server.BaseResolver):
         self.zone = zone
 
     @synchronized(_lock)
-    def add_host(self, name, ip):
-        self.zone.add_host(name, ip)
+    def add_host(self, name, ip, zone=None):
+        z = zone or self.zone
+        z.add_host(name, ip)
 
     @synchronized(_lock)
-    def remove_host(self, name, ip):
-        self.zone.remove_host(name, ip)
+    def remove_host(self, name, ip, zone=None):
+        z = zone or self.zone
+        z.remove_host(name, ip)
 
     def start(self, dns_address='0.0.0.0', dns_port=53,
               api_address='127.0.0.1', api_port=8000, tcp=False, udplen=0,
