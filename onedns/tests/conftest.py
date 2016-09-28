@@ -3,6 +3,7 @@ import dnslib
 from IPy import IP
 
 from onedns import zone
+from onedns import server
 from onedns import resolver
 from onedns.tests import vcr
 from onedns.clients import one
@@ -39,7 +40,16 @@ def dns(request):
 
 
 @pytest.fixture(scope="function")
-def oneclient(request):
+def one_dns(request, oneclient):
+    dns = server.OneDNS(domain=DOMAIN)
+    dns._one = oneclient
+    dns.start(dns_address=INTERFACE, dns_port=PORT, tcp=True)
+    request.addfinalizer(dns.close)
+    return dns
+
+
+@pytest.fixture(scope="function")
+def oneclient():
     """
     NOTE: All fixtures must be function scope to work with VCRPY cassettes
     """
