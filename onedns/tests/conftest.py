@@ -29,6 +29,14 @@ TEST_GET_FORWARD_DATA = [
     HOST,
     HOST + '.',
 ]
+TEST_FQDN_DATA = [
+    (HOST_SHORT, DOMAIN),
+    (HOST_SHORT + '.', DOMAIN),
+    (HOST_SHORT, DOMAIN + '.'),
+    (HOST_SHORT + '.', DOMAIN + '.'),
+    (HOST, DOMAIN),
+]
+TEST_FQDN_RESULT = HOST + '.'
 
 
 @pytest.fixture(scope="function")
