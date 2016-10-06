@@ -1,8 +1,13 @@
+import re
+
 from onedns import zone
 from onedns import resolver
 from onedns import exception
 from onedns.clients import one
 from onedns.logger import log
+
+
+_BAD_CHARS = re.compile('[^-a-zA-Z0-9]')
 
 
 class OneDNS(resolver.DynamicResolver):
@@ -19,15 +24,21 @@ class OneDNS(resolver.DynamicResolver):
         if not hasattr(vm.template, 'nics'):
             raise exception.NoNetworksError(vm)
 
+    def _sanitize_name(self, name):
+        name = _BAD_CHARS.sub('-', name)
+        return name.strip('-')
+
     def _get_vm_dns_entries(self, vm):
         self._check_for_networks(vm)
         entries = {}
-        hostname = vm.name
+        hostname = self._sanitize_name(vm.name)
         primary_ip = vm.template.nics[0].ip
         entries[hostname] = primary_ip
         for nic in vm.template.nics[1:]:
-            nicname = "{hostname}-{id}".format(hostname=hostname,
-                                               id=nic.nic_id)
+            nicname = self._sanitize_name("{hostname}-{id}".format(
+                id=nic.nic_id,
+                hostname=hostname
+            ))
             entries[nicname] = nic.ip
         return entries
 
