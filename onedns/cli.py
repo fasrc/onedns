@@ -1,52 +1,26 @@
 import argparse
 
-from onedns import api
 from onedns import utils
+from onedns import server
 from onedns import logger
-from onedns import monitor
-from onedns.clients import skydns
 
 
-def daemon(args, one_args, etcd_args):
-    mon = monitor.OneMonitor(args.domain, one_kwargs=one_args,
-                             etcd_kwargs=etcd_args)
-    mon.run(args.interval)
+def daemon(args, one_args, **kwargs):
+    testing = kwargs.get('testing', False)
+    vms = kwargs.get('vms')
+    srv = server.OneDNS(args.domain, one_kwargs=one_args)
+    srv.sync(vms=vms)
+    srv.daemon(dns_port=args.dns_port, testing=testing)
 
 
-def add_host(args, one_args, etcd_args):
-    client = skydns.SkyDNSClient(args.domain, etcd_kwargs=etcd_args)
-    client.add_host(args.hostname, args.ip)
-
-
-def remove_host(args, one_args, etcd_args):
-    client = skydns.SkyDNSClient(args.domain, etcd_kwargs=etcd_args)
-    client.remove_host(args.hostname, args.ip)
-
-
-def add_vm(args, one_args, etcd_args):
-    client = api.OneDNS(args.domain, one_kwargs=one_args,
-                        etcd_kwargs=etcd_args)
-    client.add_vm_by_id(args.id)
-
-
-def remove_vm(args, one_args, etcd_args):
-    client = api.OneDNS(args.domain, one_kwargs=one_args,
-                        etcd_kwargs=etcd_args)
-    client.remove_vm_by_id(args.id)
-
-
-def shell(args, one_args, etcd_args):
-    onemon = monitor.OneMonitor(args.domain, one_kwargs=one_args,
-                                etcd_kwargs=etcd_args)
-    oneclient = onemon._one
-    skyclient = onemon._skydns
-    etcdclient = skyclient._etcd
-    ns = dict(onemon=onemon, skyclient=skyclient, oneclient=oneclient,
-              etcdclient=etcdclient, log=logger.log)
+def shell(args, one_args, **kwargs):
+    srv = server.OneDNS(args.domain, one_kwargs=one_args)
+    oneclient = srv._one
+    ns = dict(one_dns=srv, oneclient=oneclient, log=logger.log)
     utils.shell(local_ns=ns)
 
 
-def main(args=None):
+def get_parser():
     parser = argparse.ArgumentParser(
         description='OneDNS - Dynamic DNS for OpenNebula')
     parser.add_argument('--debug', required=False,
@@ -60,53 +34,23 @@ def main(args=None):
                         help='ONE credentials to use (e.g. user:key)')
     parser.add_argument('--one-proxy', required=False,
                         help='proxy host to use to connect to ONE controller')
-    parser.add_argument('--etcd-host', required=False,
-                        help='etcd host to connect to')
-    parser.add_argument('--etcd-port', required=False, type=int, default=4001,
-                        help='etcd port to connect to')
-    parser.add_argument('--etcd-cert', required=False, type=int,
-                        help='path to etcd client ssl cert')
     subparsers = parser.add_subparsers()
 
     daemon_parser = subparsers.add_parser('daemon')
     daemon_parser.set_defaults(func=daemon)
     daemon_parser.add_argument(
-        '-i', '--interval', required=False, type=int, default=60,
-        help="how often in seconds to poll ONE and update DNS")
-
-    add_parser = subparsers.add_parser('add')
-    add_subparser = add_parser.add_subparsers()
-
-    add_vm_parser = add_subparser.add_parser('vm')
-    add_vm_parser.set_defaults(func=add_vm)
-    add_vm_parser.add_argument('id', type=int, help='id of the vm to add')
-
-    add_host_parser = add_subparser.add_parser('host')
-    add_host_parser.set_defaults(func=add_host)
-    add_host_parser.add_argument('hostname', help='name of host to add')
-    add_host_parser.add_argument('ip', help='ip of host to add')
-
-    rm_parser = subparsers.add_parser('remove')
-    rm_subparser = rm_parser.add_subparsers()
-
-    rm_vm_parser = rm_subparser.add_parser('vm')
-    rm_vm_parser.set_defaults(func=remove_vm)
-    rm_vm_parser.add_argument('id', type=int, help='id of the vm to add')
-
-    rm_host_parser = rm_subparser.add_parser('host')
-    rm_host_parser.set_defaults(func=remove_host)
-    rm_host_parser.add_argument('hostname', help='name of host to remove')
-    rm_host_parser.add_argument('ip', help='ip of host to remove')
+        '--dns-port', required=False, default=5053, type=int,
+        help="port for DNS server to listen on")
 
     shell_parser = subparsers.add_parser('shell')
     shell_parser.set_defaults(func=shell)
+    return parser
 
-    args = parser.parse_args(args=args)
 
+def main(**kwargs):
+    parser = get_parser()
+    args = parser.parse_args(args=kwargs.pop('args', None))
     logger.configure_onedns_logging(debug=args.debug)
-
     args_dict = vars(args)
     one_args = utils.get_kwargs_from_dict(args_dict, 'one_')
-    etcd_args = utils.get_kwargs_from_dict(args_dict, 'etcd_')
-
-    args.func(args, one_args, etcd_args)
+    args.func(args, one_args, **kwargs)

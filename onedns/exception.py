@@ -26,3 +26,21 @@ class NoNetworksError(OneDnsException):
     def __init__(self, vm):
         self.msg = "No networks found for VM {id}: {vm}".format(vm=vm.name,
                                                                 id=vm.id)
+
+
+class RecordDoesNotExist(OneDnsException):
+    """
+    Raised when a zone record does not exist
+    """
+    def __init__(self, key, val=None):
+        self.msg = "Record Does Not Exist: {}".format(key)
+        if val is not None:
+            self.msg += " -> {}".format(val)
+
+
+class DuplicateVMError(OneDnsException):
+    """
+    Raised when two or more VMs share a name or IP
+    """
+    def __init__(self, vmid, key, val):
+        self.msg = "VM one-{} has a duplicate: {} -> {}".format(vmid, key, val)
