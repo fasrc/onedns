@@ -1,4 +1,8 @@
 # OneDNS
+
+[![build status](https://gitlab-int.rc.fas.harvard.edu/ops/one-dns/badges/master/build.svg)](https://gitlab-int.rc.fas.harvard.edu/ops/one-dns/commits/master)
+[![coverage report](https://gitlab-int.rc.fas.harvard.edu/ops/one-dns/badges/master/coverage.svg)](https://gitlab-int.rc.fas.harvard.edu/ops/one-dns/commits/master)
+
 Dyanmic DNS for OpenNebula
 
 ## Usage
