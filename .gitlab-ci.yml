@@ -1,10 +1,15 @@
 image: python:2.7.12-slim
 
+cache:
+  paths:
+    - pip-cache
+
 before_script:
   - bash ci-scripts/before.sh
 
 variables:
   COVERAGE_FILE: .coverage
+  PIP_CACHE_DIR: pip-cache
   ONE_AUTH: "/tmp/test-one-auth"
   ONE_XMLRPC: "http://localhost:2633/RPC2"
 
