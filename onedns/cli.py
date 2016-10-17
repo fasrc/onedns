@@ -39,7 +39,7 @@ def get_parser():
     daemon_parser = subparsers.add_parser('daemon')
     daemon_parser.set_defaults(func=daemon)
     daemon_parser.add_argument(
-        '--dns-port', required=False, default=5053, type=int,
+        '--dns-port', required=False, default=53, type=int,
         help="port for DNS server to listen on")
 
     shell_parser = subparsers.add_parser('shell')
