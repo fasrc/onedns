@@ -99,10 +99,10 @@ class DynamicResolver(server.BaseResolver):
                 srv.server.socket.close()
 
     def daemon(self, *args, **kwargs):
-        testing = kwargs.pop('testing', False)
+        test = kwargs.pop('test', False)
         if self._udp_server is None or not self._udp_server.isAlive():
             self.start(*args, **kwargs)
         while self._udp_server.isAlive():
             time.sleep(1)
-            if testing:
+            if test:
                 break

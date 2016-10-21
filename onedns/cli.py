@@ -6,11 +6,12 @@ from onedns import logger
 
 
 def daemon(args, one_args, **kwargs):
-    testing = kwargs.get('testing', False)
-    vms = kwargs.get('vms')
+    test = kwargs.get('test', False)
+    test_vms = kwargs.get('test_vms')
     srv = server.OneDNS(args.domain, one_kwargs=one_args)
-    srv.sync(vms=vms)
-    srv.daemon(dns_port=args.dns_port, testing=testing)
+    srv.daemon(dns_port=args.dns_port,
+               sync_interval=args.sync_interval,
+               test=test, test_vms=test_vms)
 
 
 def shell(args, one_args, **kwargs):
@@ -18,6 +19,17 @@ def shell(args, one_args, **kwargs):
     oneclient = srv._one
     ns = dict(one_dns=srv, oneclient=oneclient, log=logger.log)
     utils.shell(local_ns=ns)
+
+
+def positive_int(value):
+    errmsg = "an integer greater than zero is required"
+    try:
+        ivalue = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(errmsg)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError(errmsg)
+    return ivalue
 
 
 def get_parser():
@@ -39,8 +51,11 @@ def get_parser():
     daemon_parser = subparsers.add_parser('daemon')
     daemon_parser.set_defaults(func=daemon)
     daemon_parser.add_argument(
-        '--dns-port', required=False, default=53, type=int,
+        '--dns-port', required=False, default=53, type=positive_int,
         help="port for DNS server to listen on")
+    daemon_parser.add_argument(
+        '--sync-interval', required=False, default=5 * 60, type=positive_int,
+        help="time in seconds between ONE syncs")
 
     shell_parser = subparsers.add_parser('shell')
     shell_parser.set_defaults(func=shell)

@@ -36,7 +36,7 @@ def test_nxdomain(dns):
 def test_daemon(dns):
     dns.close()
     dns.daemon(dns_address=conftest.INTERFACE, dns_port=conftest.PORT,
-               tcp=True, testing=True)
+               tcp=True, test=True)
 
 
 @pytest.mark.parametrize("qname,qtype,output", conftest.TEST_LOOKUP_DATA)
