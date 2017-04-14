@@ -3,6 +3,7 @@ import argparse
 from onedns import utils
 from onedns import server
 from onedns import logger
+from onedns import VERSION
 
 
 def daemon(args, one_args, **kwargs):
@@ -35,6 +36,7 @@ def positive_int(value):
 def get_parser():
     parser = argparse.ArgumentParser(
         description='OneDNS - Dynamic DNS for OpenNebula')
+    parser.add_argument('--version', action='version', version=VERSION)
     parser.add_argument('--debug', required=False,
                         action='store_true', default=False,
                         help='ONE controller host address')
