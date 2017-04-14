@@ -1,4 +1,8 @@
+import mock
+
 import pytest
+
+from testfixtures import LogCapture
 
 from onedns import exception
 from onedns.tests import vcr
@@ -76,3 +80,14 @@ def test_onedns_remove_vm_by_id(oneclient, one_dns):
     _add_and_verify(one_dns, vm)
     one_dns.remove_vm_by_id(vm.id)
     utils.verify_vm_dns_absent(dns_entries)
+
+
+def test_onedns_daemon_no_crash(one_dns):
+    def sync_fail(*args, **kwargs):
+        raise Exception('this should be logged')
+    with LogCapture() as log_capture:
+        with mock.patch.object(one_dns, 'sync', sync_fail):
+            one_dns.daemon(test=True, sync_interval=1)
+        log_capture.check(
+            ('onedns', 'ERROR', 'onedns sync failed:')
+        )
