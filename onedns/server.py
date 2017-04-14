@@ -94,12 +94,13 @@ class OneDNS(resolver.DynamicResolver):
         test = kwargs.pop('test', False)
         test_vms = kwargs.pop('test_vms', None)
         sync_interval = kwargs.pop('sync_interval', 5 * 60)
-        self.sync(vms=test_vms)
         if self._udp_server is None or not self._udp_server.isAlive():
             self.start(*args, **kwargs)
-        time.sleep(sync_interval)
         while self._udp_server.isAlive():
-            self.sync(vms=test_vms)
+            try:
+                self.sync(vms=test_vms)
+            except Exception:
+                log.exception('onedns sync failed:')
             time.sleep(sync_interval)
             if test:
                 break
